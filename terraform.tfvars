@@ -1,0 +1,9 @@
+account_id              = "045058549568"
+ecr_repository_name     = "manu"
+eks_cluster_name        = "manoj"
+eks_node_desired_size   = 2
+eks_node_instance_types = ["t3.micro"]
+eks_node_max_size       = 2
+eks_node_min_size       = 2
+github_repo             = "kondurumanu77/END-TO-END-JAVA-APP"
+region                  = "us-northeast-1"
