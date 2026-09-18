@@ -118,22 +118,47 @@ cat <<EOF > /tmp/monitoring-values.yaml
 grafana:
   service:
     type: LoadBalancer
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
 prometheus:
   service:
     type: LoadBalancer
+  prometheusSpec:
+    replicas: 1
+    retention: 2d
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+prometheus-node-exporter:
+  enabled: false
+kube-state-metrics:
+  enabled: false
 alertmanager:
   enabled: false
 EOF
 
-helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
-  --namespace monitoring \
-  --create-namespace \
-  -f /tmp/monitoring-values.yaml \
-  --wait \
-  --timeout 10m
+if ! helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+    --namespace monitoring \
+    --create-namespace \
+    -f /tmp/monitoring-values.yaml \
+    --wait \
+    --timeout 10m; then
+  kubectl get pods -n monitoring -o wide || true
+  kubectl get events -n monitoring --sort-by=.lastTimestamp | tail -40 || true
+  exit 1
+fi
 
-kubectl get pods -n monitoring
 kubectl get svc -n monitoring
+kubectl get pods -n monitoring
 
 #############################################
 # Final check

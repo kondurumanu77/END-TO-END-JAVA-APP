@@ -216,14 +216,30 @@ jobs:
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo update
 
-          helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
-            --namespace monitoring \
-            --create-namespace \
-            --set grafana.service.type=LoadBalancer \
-            --set prometheus.service.type=LoadBalancer \
-            --set alertmanager.enabled=false \
-            --wait \
-            --timeout 10m
+          if ! helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+              --namespace monitoring \
+              --create-namespace \
+              --set grafana.service.type=LoadBalancer \
+              --set grafana.resources.requests.cpu=50m \
+              --set grafana.resources.requests.memory=128Mi \
+              --set grafana.resources.limits.cpu=200m \
+              --set grafana.resources.limits.memory=256Mi \
+              --set prometheus.service.type=LoadBalancer \
+              --set prometheus.prometheusSpec.replicas=1 \
+              --set prometheus.prometheusSpec.retention=2d \
+              --set prometheus.prometheusSpec.resources.requests.cpu=100m \
+              --set prometheus.prometheusSpec.resources.requests.memory=256Mi \
+              --set prometheus.prometheusSpec.resources.limits.cpu=500m \
+              --set prometheus.prometheusSpec.resources.limits.memory=512Mi \
+              --set prometheus-node-exporter.enabled=false \
+              --set kube-state-metrics.enabled=false \
+              --set alertmanager.enabled=false \
+              --wait \
+              --timeout 10m; then
+            kubectl get pods -n monitoring -o wide
+            kubectl get events -n monitoring --sort-by=.lastTimestamp | tail -40
+            exit 1
+          fi
 
           kubectl get pods -n monitoring
           kubectl get services -n monitoring
