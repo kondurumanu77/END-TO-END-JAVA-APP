@@ -128,11 +128,12 @@ EOF
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
   --create-namespace \
-  -f /tmp/monitoring-values.yaml || true
+  -f /tmp/monitoring-values.yaml \
+  --wait \
+  --timeout 10m
 
-sleep 20
-kubectl get pods -n monitoring || true
-kubectl get svc -n monitoring || true
+kubectl get pods -n monitoring
+kubectl get svc -n monitoring
 
 #############################################
 # Final check

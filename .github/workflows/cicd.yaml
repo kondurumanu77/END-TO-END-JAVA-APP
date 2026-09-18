@@ -204,9 +204,33 @@ jobs:
 
           kubectl get nodes
 
+      # ==========================================================
+      # 18. INSTALL PROMETHEUS AND GRAFANA
+      # ==========================================================
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install Monitoring Stack
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+
+          helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+            --namespace monitoring \
+            --create-namespace \
+            --set grafana.service.type=LoadBalancer \
+            --set prometheus.service.type=LoadBalancer \
+            --set alertmanager.enabled=false \
+            --wait \
+            --timeout 10m
+
+          kubectl get pods -n monitoring
+          kubectl get services -n monitoring
+
 
       # ==========================================================
-      # 18. UPDATE IMAGE IN KUBERNETES
+      # 19. UPDATE IMAGE IN KUBERNETES
       # ==========================================================
 
       - name: Update Kubernetes Image
@@ -218,7 +242,7 @@ jobs:
 
 
       # ==========================================================
-      # 19. SHOW KUBERNETES MANIFEST
+      # 20. SHOW KUBERNETES MANIFEST
       # ==========================================================
 
       - name: Check Kubernetes Deployment
@@ -227,7 +251,7 @@ jobs:
 
 
       # ==========================================================
-      # 20. DEPLOY APPLICATION
+      # 21. DEPLOY APPLICATION
       # ==========================================================
 
       - name: Deploy to EKS
@@ -239,9 +263,12 @@ jobs:
           kubectl apply \
             -f k8s/service.yaml
 
+          kubectl apply \
+            -f k8s/servicemonitor.yaml
+
 
       # ==========================================================
-      # 21. CHECK DEPLOYMENT
+      # 22. CHECK DEPLOYMENT
       # ==========================================================
 
       - name: Check Kubernetes Resources
@@ -253,7 +280,7 @@ jobs:
 
 
       # ==========================================================
-      # 22. WAIT FOR ROLLOUT
+      # 23. WAIT FOR ROLLOUT
       # ==========================================================
 
       - name: Verify Deployment Rollout
@@ -265,7 +292,7 @@ jobs:
 
 
       # ==========================================================
-      # 23. FINAL STATUS
+      # 24. FINAL STATUS
       # ==========================================================
 
       - name: Final Application Status
