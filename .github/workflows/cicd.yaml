@@ -9,7 +9,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-1
-  ECR_REPOSITORY: devops-app-repo
+  ECR_REPOSITORY: manu
   EKS_CLUSTER_NAME: ips-cluster
   K8S_NAMESPACE: default
 
@@ -285,4 +285,4 @@ jobs:
           echo ""
           echo "Deployments:"
           kubectl get deployments
-          
+
